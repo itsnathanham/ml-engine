@@ -120,7 +120,6 @@
     for (const k of KEYS) res[k] = Sim.evaluate(pool, k, e);
     state.results = res;
     const budgetN = Math.round(pool.length * e.budget);
-    $('budgetN').textContent = num(budgetN);
     $('heroN').textContent = num(budgetN);
 
     const P = res.propensity;
@@ -132,7 +131,7 @@
         <div class="sum-stat"><span>Extra advances</span><b>${num(res[k].incr)}</b></div>
         <div class="sum-stat"><span>Net profit</span><b class="${res[k].margin < 0 ? 'neg' : 'pos'}">${usd(res[k].margin)}</b></div></div>`;
     const bestK = best === 'propensity' ? 'value' : best;
-    $('summary').innerHTML = `<div class="sum-lead"><p>Same ${num(budgetN)} promos each. <strong>${NAMES[bestK].name}</strong> ${res[bestK].margin >= 0 ? 'made' : 'lost'} <strong>${usd(Math.abs(res[bestK].margin))}</strong>. <strong>${NAMES.propensity.name}</strong> got the most credit and ${P.margin >= 0 ? 'made' : 'lost'} <strong>${usd(Math.abs(P.margin))}</strong>.</p></div>` +
+    $('summary').innerHTML =
       ['rules', 'propensity', bestK].map(tile).join('');
 
     // 3 — credited vs caused

@@ -63,7 +63,7 @@ em { font-style: normal; color: var(--green); font-weight: 700; }
 .offer-goal { font-size: 14px; color: #CFE0CF; position: relative; z-index: 1; max-width: 72%; }
 
 /* summary strip */
-.summary { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .sum-lead { background: var(--ink); color: #fff; border-radius: var(--radius); padding: 18px 20px; font-size: 15.5px; font-weight: 500; line-height: 1.45; display: flex; align-items: center; }
 .sum-lead strong { color: var(--lime); }
 .sum-tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; position: relative; overflow: hidden; }
@@ -235,3 +235,5 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 .members .pill { font-size: 12px; padding: 2px 8px; gap: 5px; }
 .members td:last-child, .members th:last-child { padding-right: 12px; }
+.viz > :first-child:not(.seeing) { margin-top: 20px; }
+.viz > :last-child:not(.sowhat) { margin-bottom: 20px; }
