@@ -59,7 +59,9 @@
   }
 
   // Vertical grouped bars. series[i].values[c]; colorFn(c, i) → {fill, hatch}
-  function groupedBars(el, { cats, series, colorFn, fmt, tipFn, height = 300 }) {
+  function groupedBars(el, opts) {
+    if ((el.clientWidth || 640) < 560) return groupedBarsH(el, opts);
+    const { cats, series, colorFn, fmt, tipFn, annotate, height = 310 } = opts;
     const { s, w, h } = svg(el, height);
     const m = { t: 22, r: 8, b: 44, l: 44 };
     const iw = w - m.l - m.r, ih = h - m.t - m.b;
@@ -86,12 +88,47 @@
       const lines = gw < 120 && words.length > 1 ? [words[0], words.slice(1).join(' ')] : [c];
       lines.forEach((ln, li) => node(s, 'text', { x: m.l + ci * gw + gw / 2, y: h - m.b + 18 + li * 15, 'text-anchor': 'middle', class: 'cat' }, ln));
     });
+    // Bracket marking the gap between the two bars of one category.
+    if (annotate && gw >= 110) {
+      const ci = annotate.cat;
+      const top = series[0].values[ci], bot = series[1].values[ci];
+      if (top - bot > max * 0.15) {
+        const x = m.l + ci * gw + gw - pad + 2;
+        const y1 = y(top), y2 = y(bot) - 4;
+        node(s, 'path', { d: `M${x - 5},${y1} H${x} V${y2} H${x - 5}`, fill: 'none', stroke: css('--ink'), 'stroke-width': 1.5 });
+        annotate.lines.forEach((ln, li) => node(s, 'text', { x: x + 8, y: y1 + 14 + li * 15, class: 'note' }, ln));
+      }
+    }
+  }
+
+  // Narrow-screen version: one row per category, two horizontal bars each.
+  function groupedBarsH(el, { cats, series, colorFn, fmt, tipFn }) {
+    const barH = 14, rowGap = 16, labelH = 18;
+    const rowH = labelH + series.length * (barH + 4);
+    const height = cats.length * (rowH + rowGap);
+    const { s, w } = svg(el, height);
+    const max = Math.max(...series.flatMap((x) => x.values)) || 1;
+    const valW = 48;
+    cats.forEach((c, ci) => {
+      const top = ci * (rowH + rowGap);
+      node(s, 'text', { x: 0, y: top + 13, class: 'cat' }, c);
+      series.forEach((sr, si) => {
+        const v = sr.values[ci];
+        const col = colorFn(ci, si);
+        const fill = col.hatch ? ensureHatch(s, `hh${ci}${si}${Math.random().toString(36).slice(2, 6)}`, col.fill) : col.fill;
+        const y0 = top + labelH + si * (barH + 4);
+        const bw = Math.max(2, (v / max) * (w - valW));
+        const r = node(s, 'rect', { x: 0, y: y0, width: bw, height: barH, rx: 4, fill, stroke: col.hatch ? col.fill : 'none', 'stroke-width': col.hatch ? 1.2 : 0 });
+        if (tipFn) tip(r, tipFn(ci, si));
+        node(s, 'text', { x: bw + 6, y: y0 + barH - 2, class: 'val' }, fmt(v));
+      });
+    });
   }
 
   // Horizontal 100%-stacked bars.
   function stackedBars(el, { cats, parts, values, tipFn }) {
     const narrow = (el.clientWidth || 640) < 520;
-    const rowH = 38, gap = 16, labelW = narrow ? 0 : 150;
+    const rowH = 38, gap = 16, labelW = narrow ? 0 : 185;
     const height = cats.length * (rowH + gap + (narrow ? 20 : 0)) + 6;
     const { s, w } = svg(el, height);
     const iw = w - labelW - 4;
@@ -162,7 +199,7 @@
   // Horizontal bars around a zero line (for positive/negative dollars).
   function divergingBars(el, { cats, values, colors, fmt, tipFn }) {
     const narrow = (el.clientWidth || 640) < 520;
-    const rowH = 34, gap = 14, labelW = narrow ? 0 : 150;
+    const rowH = 34, gap = 14, labelW = narrow ? 0 : 185;
     const extra = narrow ? 20 : 0;
     const height = cats.length * (rowH + gap + extra) + 26;
     const { s, w } = svg(el, height);

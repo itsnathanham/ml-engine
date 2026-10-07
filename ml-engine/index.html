@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ML Engine · Promo Targeting Sandbox</title>
-<meta name="description" content="An exploratory sandbox for ML-driven promotion targeting in short-term cash advances: propensity vs. uplift, incrementality, and holdouts.">
+<meta name="description" content="A practice sandbox for ML-driven promo targeting in cash advances: who to target, credited vs. caused results, profit after losses, and holdout tests.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
@@ -23,215 +23,195 @@
 </header>
 
 <main class="wrap">
+  <!-- Hero -->
   <section class="hero">
-    <div class="hero-text">
+    <div>
       <p class="eyebrow">Promo targeting sandbox</p>
       <h1>Who should get the promo?</h1>
-      <p class="lede">20,000 synthetic cash-advance members, where we know something real life never shows you: what each member would do <em>with</em> and <em>without</em> the promo. Five targeting strategies compete. Then we follow the money.</p>
+      <p class="lede">A promotions team has a fixed budget and one offer. This sandbox tests five ways to decide who gets it, using 20,000 made-up members where, unlike real life, we know what each one would do <em>with</em> and <em>without</em> the promo.</p>
     </div>
-    <div class="hero-card">
-      <p class="hero-card-label">The promo</p>
-      <p class="hero-card-offer"><span id="offerAmt">$3</span> off the fee on your next advance</p>
-      <p class="hero-card-sub">Goal: more members take an advance in the next 14 days, profitably.</p>
+    <div class="offer">
+      <p class="offer-label">The offer</p>
+      <p class="offer-text"><span id="offerAmt">$3</span> off the fee on your next cash advance</p>
+      <p class="offer-goal">Goal: more members take an advance in the next 14 days, without losing money.</p>
     </div>
   </section>
 
-  <div class="layout">
-    <aside class="controls" aria-label="Simulation controls">
-      <div class="panel">
-        <h2 class="panel-title">Knobs</h2>
+  <!-- Summary -->
+  <section class="summary" id="summary" aria-live="polite"></section>
 
-        <label class="ctl">
-          <span class="ctl-row"><span>Promo budget</span><output id="budgetOut">25% of members</output></span>
-          <input type="range" id="budget" min="5" max="60" step="5" value="25">
-          <span class="ctl-help">How many members each strategy is allowed to send the promo to.</span>
-        </label>
-
-        <label class="ctl">
-          <span class="ctl-row"><span>Fee discount</span><output id="promoOut">$3</output></span>
-          <input type="range" id="promo" min="1" max="10" step="1" value="3">
-          <span class="ctl-help">Paid on every advance a promo recipient takes, including ones they'd have taken anyway.</span>
-        </label>
-
+  <!-- Controls -->
+  <section class="controls" aria-label="Simulation controls">
+    <div class="ctl-grid">
+      <label class="ctl">
+        <span class="ctl-row"><span>Promo budget</span><output id="budgetOut">25% of members</output></span>
+        <input type="range" id="budget" min="5" max="60" step="5" value="25">
+      </label>
+      <label class="ctl">
+        <span class="ctl-row"><span>Discount size</span><output id="promoOut">$3</output></span>
+        <input type="range" id="promo" min="1" max="10" step="1" value="3">
+      </label>
+      <label class="ctl">
+        <span class="ctl-row"><span>Credit risk</span><output id="lossOut">Normal</output></span>
+        <input type="range" id="loss" min="0" max="3" step="0.25" value="1">
+      </label>
+    </div>
+    <details class="more">
+      <summary>More settings</summary>
+      <div class="ctl-grid">
         <label class="ctl">
           <span class="ctl-row"><span>Revenue per advance</span><output id="revOut">$8</output></span>
           <input type="range" id="rev" min="4" max="15" step="1" value="8">
         </label>
-
         <label class="ctl">
-          <span class="ctl-row"><span>Credit loss weight</span><output id="lossOut">1.0×</output></span>
-          <input type="range" id="loss" min="0" max="3" step="0.25" value="1">
-          <span class="ctl-help">Expected loss per advance: low risk $0.50, medium $2.50, high $9, times this.</span>
-        </label>
-
-        <label class="ctl">
-          <span class="ctl-row"><span>Member base</span></span>
+          <span class="ctl-row"><span>Member mix</span></span>
           <select id="scenario">
             <option value="balanced">Balanced</option>
             <option value="active">Mostly active borrowers</option>
             <option value="dormant">Mostly lapsed &amp; dormant</option>
           </select>
         </label>
-
-        <div class="btn-row">
-          <button class="btn btn-primary" id="reroll">New population</button>
-          <button class="btn btn-ghost" id="reset">Reset</button>
+        <div class="ctl">
+          <span class="ctl-row"><span>Population</span><output>Seed <span id="seedOut">42</span></output></span>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="reroll">New members</button>
+            <button class="btn btn-ghost" id="reset">Reset all</button>
+          </div>
         </div>
-        <p class="seed">Seed <span id="seedOut">42</span> · models retrain on each new population</p>
       </div>
+      <p class="more-note">Credit risk sets expected losses per advance: low-risk $0.50, medium $2.50, high $9 at "Normal." Generating new members also retrains the models.</p>
+    </details>
+  </section>
 
-      <nav class="toc panel" aria-label="Sections">
-        <a href="#s1">1 · Meet the members</a>
-        <a href="#s2">2 · Five strategies</a>
-        <a href="#s3">3 · The flattering readout</a>
-        <a href="#s4">4 · Who each one reached</a>
-        <a href="#s5">5 · The uplift curve</a>
-        <a href="#s6">6 · Follow the money</a>
-        <a href="#s7">7 · A real holdout test</a>
-        <a href="#s8">8 · Takeaways</a>
-      </nav>
-    </aside>
+  <div class="loading" id="loading">Generating members and training models…</div>
 
-    <div class="content" id="content">
-      <div class="loading" id="loading">Generating members and training models…</div>
+  <!-- 1 -->
+  <section class="block" id="s1">
+    <p class="kicker">1 · Setup</p>
+    <h2 id="h1">Only some members can be persuaded</h2>
 
-      <!-- 1 -->
-      <section class="block" id="s1">
-        <div class="block-head">
-          <span class="step">1</span>
-          <div><h2>Meet the members</h2>
-          <p class="sub">Every member falls into one of four groups, based on how the promo changes their behavior.</p></div>
-        </div>
-        <div class="seg-grid" id="segGrid"></div>
-        <div class="card">
-          <div class="card-head">
-            <h3>A sample of members</h3>
-            <label class="toggle"><input type="checkbox" id="reveal"><span>Reveal hidden truth</span></label>
-          </div>
-          <div class="table-scroll"><table class="members" id="memberTable"></table></div>
-        </div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p>The left columns are what Dave's systems can actually see: pay cadence, days since last advance, app sessions, direct deposit, risk tier. The hidden columns are each member's chance of borrowing without and with the promo.</p></div>
-          <div><h4>Why it matters</h4><p>In real life you only ever observe one of those two numbers per member: they either got the promo or didn't. Uplift modeling exists to estimate the gap you can't see directly.</p></div>
-        </div>
-      </section>
-
-      <!-- 2 -->
-      <section class="block" id="s2">
-        <div class="block-head">
-          <span class="step">2</span>
-          <div><h2>Five ways to pick who gets it</h2>
-          <p class="sub">Two ML models were trained on last quarter's randomized promo test (<span id="trainN">10,000</span> members, half got the promo).</p></div>
-        </div>
-        <div class="strat-grid" id="stratGrid"></div>
-      </section>
-
-      <!-- 3 -->
-      <section class="block" id="s3">
-        <div class="block-head">
-          <span class="step">3</span>
-          <div><h2>The readout everyone wants to believe</h2>
-          <p class="sub">Advances credited to the promo on a typical dashboard, versus advances the promo actually caused.</p></div>
-        </div>
-        <div class="insight" id="insight3"></div>
-        <div class="card"><div class="legend" id="legend3"></div><div class="chart" id="chart3"></div></div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p><strong>Credited</strong> counts every advance a promo recipient took. <strong>Caused</strong> counts only the extra advances that wouldn't have happened without the promo. The gap is borrowing that was going to happen anyway.</p></div>
-          <div><h4>Why it matters</h4><p>A propensity model is built to find people likely to act, so it wins the credited metric and loses the one that matters. "Clean incrementality" in the job description is about never confusing these two bars.</p></div>
-        </div>
-      </section>
-
-      <!-- 4 -->
-      <section class="block" id="s4">
-        <div class="block-head">
-          <span class="step">4</span>
-          <div><h2>Who each strategy actually reached</h2>
-          <p class="sub">The mix of members behind each strategy's promo sends.</p></div>
-        </div>
-        <div class="card"><div class="legend" id="legend4"></div><div class="chart" id="chart4"></div></div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p>Each bar is one strategy's promo list, split by the four hidden groups. Green is money well spent. Lime is discounts handed to people who'd have borrowed anyway. Coral is actively counterproductive.</p></div>
-          <div><h4>Why it matters</h4><p>Behavioral rules land in the right neighborhood but can't see the pockets (like dormant members who still direct-deposit) or avoid sleeping dogs. The uplift model learns those patterns from the test data.</p></div>
-        </div>
-      </section>
-
-      <!-- 5 -->
-      <section class="block" id="s5">
-        <div class="block-head">
-          <span class="step">5</span>
-          <div><h2>The uplift curve</h2>
-          <p class="sub">Extra advances caused as each strategy works down its ranked list, from best-scored member to worst.</p></div>
-        </div>
-        <div class="card"><div class="legend" id="legend5"></div><div class="chart" id="chart5"></div></div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p>Data scientists call this a Qini curve. The dashed line is perfect knowledge of every member's true response. A good model bows up toward it early; random targeting is a straight line. The dotted marker is your current budget.</p></div>
-          <div><h4>Why it matters</h4><p>It answers two questions at once: how good is the model, and how far down the list is it worth going? Where a curve flattens or bends down, extra promo spend stops buying anything.</p></div>
-        </div>
-      </section>
-
-      <!-- 6 -->
-      <section class="block" id="s6">
-        <div class="block-head">
-          <span class="step">6</span>
-          <div><h2>Follow the money</h2>
-          <p class="sub">Net incremental margin: extra advances × (revenue − expected credit loss) − every discount paid out.</p></div>
-        </div>
-        <div class="insight" id="insight6"></div>
-        <div class="card"><div class="chart" id="chart6"></div></div>
-        <div class="card"><div class="table-scroll"><table class="money" id="moneyTable"></table></div></div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p>Promo cost is paid on every advance a recipient takes, so targeting sure things burns budget. Credit losses are subtracted from the advances the promo causes, so pushing high-risk members can turn growth into loss.</p></div>
-          <div><h4>Why it matters</h4><p>In short-term lending, the objective isn't "most advances," it's margin after losses. Try raising the credit loss weight: the risk-aware model gets pickier, while plain uplift keeps spending on members who cost more than they return.</p></div>
-        </div>
-      </section>
-
-      <!-- 7 -->
-      <section class="block" id="s7">
-        <div class="block-head">
-          <span class="step">7</span>
-          <div><h2>What a real holdout test would tell you</h2>
-          <p class="sub">In real life there's no hidden truth. You hold back a random slice of the chosen members and compare.</p></div>
-        </div>
-        <div class="card holdout">
-          <div class="holdout-ctl">
-            <label class="ctl inline">
-              <span>Strategy</span>
-              <select id="hoStrategy"></select>
-            </label>
-            <label class="ctl inline">
-              <span class="ctl-row"><span>Holdout size</span><output id="hoOut">10%</output></span>
-              <input type="range" id="hoShare" min="2" max="50" step="1" value="10">
-            </label>
-            <button class="btn btn-ghost" id="hoRerun">Run the test again</button>
-          </div>
-          <div class="ho-grid" id="hoGrid"></div>
-          <div class="chart" id="chart7"></div>
-        </div>
-        <div class="explain">
-          <div><h4>What you're looking at</h4><p>One simulated run of the test, with real coin-flip noise. The bar shows the 95% confidence range for extra advances, measured by comparing promo recipients to the held-back group. The marker is the hidden truth.</p></div>
-          <div><h4>Why it matters</h4><p>Re-run it a few times. Small holdouts give wide, jumpy ranges, and some runs miss the truth entirely. Big holdouts are precise but withhold the promo from more people. Picking that trade-off is a product decision, not just a stats one.</p></div>
-        </div>
-      </section>
-
-      <!-- 8 -->
-      <section class="block" id="s8">
-        <div class="block-head">
-          <span class="step">8</span>
-          <div><h2>Takeaways</h2></div>
-        </div>
-        <div class="takeaways">
-          <div class="take"><span class="take-n">01</span><h4>Target the change, not the outcome</h4><p>"Most likely to borrow" and "most likely to borrow because of us" are different lists. Propensity finds the first; uplift finds the second.</p></div>
-          <div class="take"><span class="take-n">02</span><h4>Credit is not causation</h4><p>Any readout that credits every recipient's activity to the promo will overstate impact. A persistent holdout is the only honest denominator.</p></div>
-          <div class="take"><span class="take-n">03</span><h4>Score in dollars, with risk inside</h4><p>For a lender, the target is incremental margin after expected losses and promo cost, not incremental advances.</p></div>
-          <div class="take"><span class="take-n">04</span><h4>Rules are a fine v0</h4><p>Good behavioral triggers capture the main effect. The model's edge is in pockets rules miss and members rules should skip.</p></div>
-        </div>
-      </section>
-
-      <footer class="foot">
-        <p>Unofficial interview-prep project. Not affiliated with or endorsed by Dave. All members, numbers, and model results are synthetic.</p>
-      </footer>
+    <div class="viz">
+      <p class="seeing"><b>What you're seeing:</b> every member falls into one of four groups, based on how the promo changes their chance of taking an advance. In real life these labels are invisible. The models have to infer them.</p>
+      <div class="seg-grid" id="segGrid"></div>
+      <p class="sowhat"><b>Why it matters:</b> the whole job is reaching the green group without paying discounts to the lime one. Coral members are worse off for being contacted.</p>
     </div>
-  </div>
+
+    <div class="viz">
+      <p class="seeing"><b>Where the models learn from:</b> last quarter's A/B test. Members were randomly split, half got the promo, half didn't.</p>
+      <div class="test-row" id="testRow"></div>
+      <p class="sowhat"><b>Why it matters:</b> that gap is the <i>average</i> effect. It hides big differences between people, which is exactly what targeting tries to exploit.</p>
+    </div>
+
+    <p class="term"><span>Term</span><b>Randomized test (A/B test)</b> Splitting members by coin flip so the only difference between groups is the promo. The only reliable way to measure cause and effect, and the training data for the models.</p>
+
+    <details class="deeper" id="d1">
+      <summary>Go deeper: look at individual members</summary>
+      <div class="deeper-body">
+        <p class="seeing"><b>What you're seeing:</b> the left columns are what the app can actually observe. The shaded columns are each member's true chance of borrowing without and with the promo. In real life you only ever see one of the two.</p>
+        <label class="toggle"><input type="checkbox" id="reveal"><span>Reveal hidden truth</span></label>
+        <div class="table-scroll"><table class="members" id="memberTable"></table></div>
+      </div>
+    </details>
+  </section>
+
+  <!-- 2 -->
+  <section class="block" id="s2">
+    <p class="kicker">2 · The decision</p>
+    <h2>Five ways to spend the same budget</h2>
+    <p class="lead-in">Each strategy sends the same number of promos (<span id="budgetN">2,500</span>). The only difference is who it picks.</p>
+    <div class="strat-grid" id="stratGrid"></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="block" id="s3">
+    <p class="kicker">3 · Result</p>
+    <h2 id="h3">Credit and impact tell different stories</h2>
+
+    <div class="viz">
+      <p class="seeing"><b>What you're seeing:</b> the striped bar is what a typical dashboard credits to the promo: every advance taken by someone who got it. The solid bar is what the promo actually caused, meaning advances that wouldn't have happened otherwise.</p>
+      <div class="legend" id="legend3"></div>
+      <div class="chart" id="chart3"></div>
+      <p class="sowhat" id="sowhat3"></p>
+    </div>
+
+    <p class="term"><span>Term</span><b>Incrementality</b> The extra behavior a promo causes, beyond what would have happened anyway. The solid bar.</p>
+
+    <details class="deeper" id="d3a">
+      <summary>Go deeper: who each strategy actually reached</summary>
+      <div class="deeper-body">
+        <p class="seeing"><b>What you're seeing:</b> each bar is one strategy's promo list, split into the four hidden groups.</p>
+        <div class="legend" id="legend4"></div>
+        <div class="chart" id="chart4"></div>
+        <p class="sowhat"><b>Why it matters:</b> rules land in the right neighborhood but can't spot the pockets, like dormant members who still direct-deposit, or skip the coral group. The models learn those patterns from the test.</p>
+      </div>
+    </details>
+
+    <details class="deeper" id="d3b">
+      <summary>Go deeper: how far down the list is worth going?</summary>
+      <div class="deeper-body">
+        <p class="seeing"><b>What you're seeing:</b> each line starts with the member a strategy likes best and works down its list. The height is extra advances caused so far. The dashed line is perfect knowledge. The dotted marker is your current budget.</p>
+        <div class="legend" id="legend5"></div>
+        <div class="chart" id="chart5"></div>
+        <p class="sowhat"><b>Why it matters:</b> a good model rises steeply early. Where a line flattens, extra budget stops buying anything. Data scientists call this a <i>Qini</i> or <i>uplift curve</i>.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 4 -->
+  <section class="block" id="s4">
+    <p class="kicker">4 · Result</p>
+    <h2 id="h4">Only some strategies make money</h2>
+
+    <div class="viz">
+      <p class="seeing"><b>What you're seeing:</b> net profit from the promo. That's revenue from the extra advances, minus expected credit losses on them, minus every discount paid (including to members who'd have borrowed anyway). Hover a bar for the breakdown.</p>
+      <div class="chart" id="chart6"></div>
+      <p class="sowhat" id="sowhat6"></p>
+    </div>
+
+    <p class="term"><span>Term</span><b>Net incremental margin</b> Profit the promo creates after its own costs. For a lender, the number that matters more than extra advances.</p>
+  </section>
+
+  <!-- 5 -->
+  <section class="block" id="s5">
+    <p class="kicker">5 · Proving it</p>
+    <h2>In real life, a holdout group finds the truth</h2>
+
+    <div class="viz">
+      <p class="seeing"><b>What you're seeing:</b> one simulated run of a real test. A random slice of the chosen members doesn't get the promo. Comparing the two groups estimates the true effect, with real noise.</p>
+      <div class="holdout-ctl">
+        <label class="ctl">
+          <span class="ctl-row"><span>Strategy</span></span>
+          <select id="hoStrategy"></select>
+        </label>
+        <label class="ctl">
+          <span class="ctl-row"><span>Holdout size</span><output id="hoOut">10%</output></span>
+          <input type="range" id="hoShare" min="2" max="50" step="1" value="10">
+        </label>
+        <button class="btn btn-ghost" id="hoRerun">Run the test again</button>
+      </div>
+      <div class="ho-grid" id="hoGrid"></div>
+      <div class="chart" id="chart7"></div>
+      <p class="sowhat"><b>Why it matters:</b> re-run it a few times. Small holdouts give wide, jumpy ranges. Big ones are precise but withhold the offer from more members. Choosing that trade-off is a product call, not just a stats one.</p>
+    </div>
+
+    <p class="term"><span>Term</span><b>Confidence range</b> The span the true effect most likely falls in. About 1 run in 20 will miss it by chance.</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="block" id="s6">
+    <p class="kicker">6 · Takeaways</p>
+    <h2>What carries over to the real job</h2>
+    <div class="takeaways">
+      <div class="take"><span class="take-n">01</span><h3>Target the change, not the activity</h3><p>"Most likely to borrow" and "most likely to borrow <i>because of us</i>" are different lists. Only the second is worth paying for.</p></div>
+      <div class="take"><span class="take-n">02</span><h3>Score in dollars, with risk inside</h3><p>For a lender, the target is profit after credit losses and promo cost, not more advances.</p></div>
+      <div class="take"><span class="take-n">03</span><h3>Keep a holdout, always</h3><p>Dashboards credit the promo for everything recipients do. A persistent holdout is the only honest comparison.</p></div>
+      <div class="take"><span class="take-n">04</span><h3>Rules first, then earn the model</h3><p>Good rules capture the main effect. A model's edge is in the pockets rules miss and the members rules should skip.</p></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <p>Unofficial interview-prep project. Not affiliated with or endorsed by Dave. All members, numbers, and model results are synthetic.</p>
+  </footer>
 </main>
 
 <script src="sim.js"></script>
