@@ -27,13 +27,14 @@
   <section class="hero">
     <div>
       <p class="eyebrow">Promo targeting sandbox</p>
-      <h1>Who should get the promo?</h1>
-      <p class="lede">A fixed promo budget, one offer, and five targeting strategies, from hand-written rules to risk-aware uplift modeling. Run on a simulated member base where each member's outcome <em>with</em> and <em>without</em> the promo is known, so every strategy can be scored on true incrementality and profit.</p>
+      <h1><span id="heroN">2,500</span> fee discounts. Which model should decide who gets them?</h1>
+      <p class="lede">Compare ML models (propensity, uplift, uplift + risk), rules-based, and other models to understand incremental ExtraCash trends and profits.</p>
+      <p class="disclaimer">Demo only, designed for visual and demo purposes. Includes seeded user data grounded in directional trends inferred as an outsider.</p>
     </div>
     <div class="offer">
       <p class="offer-label">The offer</p>
       <p class="offer-text"><span id="offerAmt">$3</span> off the fee on your next cash advance</p>
-      <p class="offer-goal">Objective: incremental advances in the next 14 days, at positive net margin.</p>
+      <p class="offer-goal">Objective: drive incremental advances in the next 14 days at positive net margin.</p>
     </div>
   </section>
 
@@ -93,7 +94,7 @@
     <div class="viz">
       <p class="seeing">Members by response to the promo: change in 14-day advance probability, without → with.</p>
       <div class="seg-grid" id="segGrid"></div>
-      <p class="sowhat"><b>So what:</b> targeting value comes from reaching persuadables while avoiding discounts to sure things and contact with sleeping dogs.</p>
+      <p class="sowhat"><b>So what:</b> targeting value comes from reaching persuadables while avoiding discounts to sure things and contact with sleeping dogs. Ecosystem depth (Dave checking, savings goals) skews members toward sure things: they're already engaged, so a promo moves them less.</p>
     </div>
 
     <div class="viz">
@@ -103,11 +104,10 @@
     </div>
 
 
-    <details class="deeper" id="d1">
+    <details class="deeper" id="d1" open>
       <summary>Member-level view</summary>
       <div class="deeper-body">
         <p class="seeing">Observable features alongside each member's simulated outcome with and without the promo. In production only one is ever observed.</p>
-        <label class="toggle"><input type="checkbox" id="reveal"><span>Reveal hidden truth</span></label>
         <div class="table-scroll"><table class="members" id="memberTable"></table></div>
       </div>
     </details>
@@ -134,7 +134,7 @@
     </div>
 
 
-    <details class="deeper" id="d3a">
+    <details class="deeper" id="d3a" open>
       <summary>Segment mix by strategy</summary>
       <div class="deeper-body">
         <p class="seeing">Share of each strategy's promo recipients by response segment.</p>
@@ -144,15 +144,6 @@
       </div>
     </details>
 
-    <details class="deeper" id="d3b">
-      <summary>Qini curve: incremental advances by targeting depth</summary>
-      <div class="deeper-body">
-        <p class="seeing">Cumulative incremental advances as each strategy works down its ranked list. Dashed line is the oracle ranking.</p>
-        <div class="legend" id="legend5"></div>
-        <div class="chart" id="chart5"></div>
-        <p class="sowhat"><b>So what:</b> curve shape sets the budget. Spend where the curve is steep; stop where it flattens.</p>
-      </div>
-    </details>
   </section>
 
   <!-- 4 -->
@@ -166,43 +157,6 @@
       <p class="sowhat" id="sowhat6"></p>
     </div>
 
-  </section>
-
-  <!-- 5 -->
-  <section class="block" id="s5">
-    <p class="kicker">5 · Measurement</p>
-    <h2>Measuring it in production: a holdout read</h2>
-
-    <div class="viz">
-      <p class="seeing">Simulated holdout within one strategy's targeted list, with sampling noise.</p>
-      <div class="holdout-ctl">
-        <label class="ctl">
-          <span class="ctl-row"><span>Strategy</span></span>
-          <select id="hoStrategy"></select>
-        </label>
-        <label class="ctl">
-          <span class="ctl-row"><span>Holdout size</span><output id="hoOut">10%</output></span>
-          <input type="range" id="hoShare" min="2" max="50" step="1" value="10">
-        </label>
-        <button class="btn btn-ghost" id="hoRerun">Run the test again</button>
-      </div>
-      <div class="ho-grid" id="hoGrid"></div>
-      <div class="chart" id="chart7"></div>
-      <p class="sowhat"><b>So what:</b> holdout size trades precision against promos withheld. Sizing it is a product decision, not just a statistical one.</p>
-    </div>
-
-  </section>
-
-  <!-- 6 -->
-  <section class="block" id="s6">
-    <p class="kicker">6 · Implications</p>
-    <h2>Implications for a promo engine</h2>
-    <div class="takeaways">
-      <div class="take"><span class="take-n">01</span><h3>Target the change, not the activity</h3><p>"Most likely to borrow" and "most likely to borrow <i>because of us</i>" are different lists. Only the second is worth paying for.</p></div>
-      <div class="take"><span class="take-n">02</span><h3>Score in dollars, with risk inside</h3><p>For a lender, the target is profit after credit losses and promo cost, not more advances.</p></div>
-      <div class="take"><span class="take-n">03</span><h3>Keep a holdout, always</h3><p>Recipient-based dashboards overstate impact. A persistent holdout is the only honest denominator.</p></div>
-      <div class="take"><span class="take-n">04</span><h3>Rules first, then earn the model</h3><p>Good rules capture the main effect. A model's edge is in the pockets rules miss and the members rules should skip.</p></div>
-    </div>
   </section>
 
   <footer class="foot">

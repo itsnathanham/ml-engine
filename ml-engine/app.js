@@ -10,7 +10,7 @@
   // Plain-English names first, technical term second.
   const NAMES = {
     random:     { name: 'Random', short: 'Random', tech: 'Baseline', how: 'Picks members at random. The bar every other strategy has to clear.' },
-    rules:      { name: 'Hand-written rules', short: 'Rules', tech: 'Behavioral triggers · no ML', how: 'Scores simple signals: lapsed 2–6 weeks, active in the app, direct deposit, borrowed before.' },
+    rules:      { name: 'Behavioral rules & triggers', short: 'Behavioral rules', tech: 'No ML', how: 'Scores simple signals: lapsed 2–6 weeks, active in the app, direct deposit, borrowed before.' },
     propensity: { name: 'Most likely to borrow', short: 'Likely to borrow', tech: 'Propensity model · ML', how: 'Learns who borrowed after getting last quarter’s promo, then picks look-alikes.' },
     uplift:     { name: 'Most likely to be persuaded', short: 'Persuadable', tech: 'Uplift model · ML', how: 'Two models predict borrowing with and without the promo. Picks the biggest gap.' },
     value:      { name: 'Persuadable and profitable', short: 'Persuadable + profitable', tech: 'Risk-aware uplift · ML', how: 'Same gap, converted to dollars after credit losses and discount cost. Skips money-losers.' },
@@ -50,15 +50,8 @@
     $('budget').value = 25; $('promo').value = 3; $('rev').value = 8; $('loss').value = 1; $('scenario').value = 'balanced';
     rebuild();
   });
-  $('reveal').addEventListener('change', (e) => $('memberTable').classList.toggle('revealed', e.target.checked));
-  $('hoShare').addEventListener('input', (e) => { $('hoOut').textContent = e.target.value + '%'; renderHoldout(); });
-  $('hoRerun').addEventListener('click', () => { state.hoSeed++; renderHoldout(); });
-  ['d3a', 'd3b'].forEach((id) => $(id).addEventListener('toggle', renderDeeper));
+  ['d3a'].forEach((id) => $(id).addEventListener('toggle', renderDeeper));
 
-  const hoSel = $('hoStrategy');
-  KEYS.forEach((k) => { const o = document.createElement('option'); o.value = k; o.textContent = NAMES[k].name; hoSel.appendChild(o); });
-  hoSel.value = 'uplift';
-  hoSel.addEventListener('change', renderHoldout);
 
   // ---------- build ----------
   function rebuild() {
@@ -99,18 +92,17 @@
     const sample = [];
     for (const k of SEGMENTS) sample.push(...pool.filter((m) => m.segment === k).slice(0, 2));
     sample.sort((a, b) => ((a.id * 7919) % 97) - ((b.id * 7919) % 97));
-    const cad = { weekly: 'Weekly', biweekly: 'Biweekly', irregular: 'Irregular / gig' };
+    const cad = { weekly: 'Weekly', biweekly: 'Biweekly', irregular: 'Gig' };
     const risk = { low: 'Low', med: 'Medium', high: 'High' };
     $('memberTable').innerHTML = `<thead><tr>
-        <th>Member</th><th>Pay</th><th class="num">Last advance</th><th class="num">App visits / 30d</th><th>Direct deposit</th><th>Risk</th>
+        <th>Member</th><th>Pay</th><th class="num">Last adv.</th><th class="num">Visits / 30d</th><th>Direct dep.</th><th>Checking</th><th>Goals</th><th>Risk</th>
         <th class="num hidden-col">No promo</th><th class="num hidden-col">With promo</th><th class="hidden-col">Group</th>
       </tr></thead><tbody>` + sample.map((m) => `<tr>
         <td>#${String(m.id).padStart(5, '0')}</td><td>${cad[m.cadence]}</td><td class="num">${m.days}d ago</td>
-        <td class="num">${m.sessions}</td><td>${m.dd ? 'Yes' : 'No'}</td><td>${risk[m.risk]}</td>
+        <td class="num">${m.sessions}</td><td>${m.dd ? 'Yes' : 'No'}</td><td>${m.checking ? 'Yes' : 'No'}</td><td>${m.goals ? 'Yes' : 'No'}</td><td>${risk[m.risk]}</td>
         <td class="num hidden-col">${pct(m.p0)}</td><td class="num hidden-col">${pct(m.p1)}</td>
         <td class="hidden-col"><span class="pill" style="--pill-c:${segColor(m.segment)}">${SEGMENT_INFO[m.segment].label}</span></td>
       </tr>`).join('') + '</tbody>';
-    $('memberTable').classList.toggle('revealed', $('reveal').checked);
   }
 
   // ---------- 2: strategies ----------
@@ -129,6 +121,7 @@
     state.results = res;
     const budgetN = Math.round(pool.length * e.budget);
     $('budgetN').textContent = num(budgetN);
+    $('heroN').textContent = num(budgetN);
 
     const P = res.propensity;
     const best = KEYS.reduce((a, b) => (res[b].margin > res[a].margin ? b : a));
@@ -143,12 +136,7 @@
       ['rules', 'propensity', bestK].map(tile).join('');
 
     // 3 — credited vs caused
-    const mlIncr = ['propensity', 'uplift', 'value'].map((k) => res[k].incr);
-    const propTopCredit = KEYS.every((k) => res[k].attributed <= P.attributed);
-    const propLowImpact = P.incr <= Math.min(...mlIncr);
-    $('h3').textContent = propTopCredit && propLowImpact
-      ? 'The propensity list gets the most credit and drives the least incremental volume'
-      : 'Credit and impact tell different stories';
+    $('h3').textContent = 'Propensity list gets the most credit but drives the least incremental volume';
     const anyway = Math.max(0, P.attributed - P.incr) / P.attributed;
     $('sowhat3').innerHTML = `<b>So what:</b> about <strong>${pct(anyway)}</strong> of advances credited to the propensity list would have happened anyway. Optimizing to credited advances selects the worst strategy.`;
     $('legend3').innerHTML = `<span><i class="hatch" style="--c:${css('--ink-3')}"></i>Credited</span><span><i style="--c:${css('--ink-3')}"></i>Incremental</span>`;
@@ -178,7 +166,6 @@
     });
 
     renderDeeper();
-    renderHoldout();
   }
 
   // ---------- deeper (only when open, so charts measure real width) ----------
@@ -194,27 +181,6 @@
         tipFn: (ci, pi) => `<b>${NAMES[KEYS[ci]].name}</b><br>${SEGMENT_INFO[SEGMENTS[pi]].label}: ${num(res[KEYS[ci]].seg[SEGMENTS[pi]])} of ${num(res[KEYS[ci]].n)} promos`,
       });
     }
-    if ($('d3b').open) {
-      const e = econ(), pool = state.world.pool;
-      const series = ['random', 'rules', 'propensity', 'uplift'].map((k) => ({ name: NAMES[k].short, color: stratColor(k), points: Sim.upliftCurve(pool, k, e) }));
-      series.unshift({ name: NAMES.oracle.name, color: stratColor('oracle'), dash: '6 6', width: 2, points: Sim.upliftCurve(pool, 'oracle', e) });
-      $('legend5').innerHTML = series.map((sr) => `<span><i class="${sr.dash ? 'dash' : ''}" style="--c:${sr.color}"></i>${sr.name}</span>`).join('');
-      Charts.lineChart($('chart5'), { series, xFmt: pct, yFmt: num, marker: e.budget, markerLabel: 'Budget ' + pct(e.budget) });
-    }
-  }
-
-  // ---------- 5: holdout ----------
-  function renderHoldout() {
-    if (!state.results) return;
-    const share = +$('hoShare').value / 100;
-    const ho = Sim.holdoutReadout(state.results[hoSel.value].treated, share, state.seed * 1000 + state.hoSeed);
-    const truth = ho.trueIncrT;
-    const missed = truth < ho.estLo || truth > ho.estHi;
-    $('hoGrid').innerHTML = `
-      <div class="ho-stat naive"><div class="k">Dashboard credit</div><div class="v">${num(ho.naiveCredit)}</div><div class="d">All advances by the ${num(ho.nT)} treated members</div></div>
-      <div class="ho-stat measured"><div class="k">Holdout estimate</div><div class="v">${num(ho.estIncr)}</div><div class="d">95% CI ${num(ho.estLo)} to ${num(ho.estHi)}. ${pct(ho.rT)} treated vs ${pct(ho.rH)} of ${num(ho.nH)} held out.</div></div>
-      <div class="ho-stat"><div class="k">True effect (simulated)</div><div class="v">${num(truth)}</div><div class="d">${missed ? 'Outside this run’s 95% interval, as expected in ~1 of 20 runs.' : 'Within the 95% interval.'}</div></div>`;
-    Charts.intervalChart($('chart7'), { naive: ho.naiveCredit, lo: ho.estLo, hi: ho.estHi, est: ho.estIncr, truth, fmt: num });
   }
 
   let rt;

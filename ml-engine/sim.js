@@ -55,6 +55,10 @@
     const state = pick(r, ['recent', 'lapsed', 'dormant'], mix);
     const cadence = pick(r, ['weekly', 'biweekly', 'irregular'], [0.30, 0.45, 0.25]);
     const dd = r() < (cadence === 'irregular' ? 0.22 : 0.55);
+    // Ecosystem depth: Dave checking account and savings goals beyond ExtraCash.
+    const checking = r() < (dd ? 0.7 : 0.18);
+    const goals = r() < (checking ? 0.45 : 0.08);
+    const depth = (checking ? 1 : 0) + (goals ? 1 : 0);
     const risk = cadence === 'irregular'
       ? pick(r, ['low', 'med', 'high'], [0.25, 0.42, 0.33])
       : pick(r, ['low', 'med', 'high'], [0.45, 0.38, 0.17]);
@@ -76,7 +80,7 @@
     if (days > 90) adv = 0; // advances in last 90 days can't exist if last advance was >90 days ago
 
     // Baseline: how likely to borrow with no nudge.
-    const logit0 = -3.2 + 0.16 * Math.min(sessions, 20) + 0.35 * adv + (dd ? 0.4 : 0)
+    const logit0 = -3.2 + 0.16 * Math.min(sessions, 20) + 0.35 * adv + (dd ? 0.4 : 0) + (checking ? 0.6 : 0) + (goals ? 0.5 : 0)
       - 0.015 * Math.min(days, 150) + normal(r) * 0.3;
     const p0 = clamp(sigmoid(logit0), 0.002, 0.95);
 
@@ -84,10 +88,12 @@
     // Peaks for members ~5 weeks lapsed; irregular pay amplifies it;
     // dormant members who still route their paycheck to Dave are a hidden pocket.
     const bump = Math.exp(-Math.pow((days - 38) / 16, 2));
-    let tau = 0.20 * bump * (cadence === 'irregular' ? 1.3 : 1)
+    let tau = 0.26 * bump * (cadence === 'irregular' ? 1.3 : 1)
       * (risk === 'low' ? 1.1 : risk === 'high' ? 0.85 : 1)
       + (dd && days > 70 ? 0.14 : 0) + 0.012;
     tau *= 0.7 + r() * 0.6;
+    // Deeper in the ecosystem → already engaged, so the promo moves them less.
+    tau *= depth === 2 ? 0.35 : depth === 1 ? 0.6 : 1;
 
     // Sleeping dogs: high-risk lapsed members for whom a nudge backfires.
     if (risk === 'high' && days >= 20 && days <= 120 && r() < 0.45) {
@@ -102,7 +108,7 @@
     else if (p0 >= 0.25) segment = 'sure';
     else segment = 'lost';
 
-    return { id, cadence, dd, risk, days, adv, sessions, p0, p1, tau: trueTau, segment };
+    return { id, cadence, dd, checking, goals, risk, days, adv, sessions, p0, p1, tau: trueTau, segment };
   }
 
   // ---------- Features the models are allowed to see ----------
@@ -110,7 +116,7 @@
   const SES_BINS = [0, 2, 5, 10, Infinity];
   const ADV_BINS = [0, 1, 3, Infinity];
   function binIndex(x, bins) { for (let i = 0; i < bins.length; i++) if (x <= bins[i]) return i; return bins.length - 1; }
-  const NFEAT = 1 + DAY_BINS.length + SES_BINS.length + ADV_BINS.length + 3 + 2 + 3;
+  const NFEAT = 1 + DAY_BINS.length + SES_BINS.length + ADV_BINS.length + 3 + 2 + 3 + 3;
   function features(m) {
     const f = new Float64Array(NFEAT);
     let o = 0;
@@ -121,6 +127,9 @@
     f[o + ['weekly', 'biweekly', 'irregular'].indexOf(m.cadence)] = 1; o += 3;
     f[o++] = m.dd ? 1 : 0;
     f[o++] = m.dd && m.days > 70 ? 1 : 0; // engineered interaction: dormant but still direct-depositing
+    f[o++] = m.checking ? 1 : 0;
+    f[o++] = m.goals ? 1 : 0;
+    f[o++] = m.checking && m.goals ? 1 : 0; // fully embedded in the ecosystem
     f[o + ['low', 'med', 'high'].indexOf(m.risk)] = 1;
     return f;
   }
