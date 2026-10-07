@@ -83,12 +83,12 @@ em { font-style: normal; color: var(--green); font-weight: 700; }
 .ctl-row output { font-family: var(--display); font-weight: 700; color: var(--green); font-size: 14px; white-space: nowrap; }
 input[type=range] { width: 100%; accent-color: var(--green); height: 22px; margin: 0; }
 select { width: 100%; font: 500 14px var(--body); color: var(--ink); padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--bg); }
-.more { margin-top: 8px; }
+.more { margin-top: 4px; }
 .more summary { cursor: pointer; font-weight: 700; font-size: 13px; color: var(--green); list-style: none; display: inline-flex; align-items: center; gap: 6px; }
 .more summary::-webkit-details-marker { display: none; }
 .more summary::before { content: '+'; display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--panel); font-size: 14px; line-height: 1; }
 .more[open] summary::before { content: '–'; }
-.more .ctl-grid { margin-top: 12px; }
+.more .ctl-grid { margin-top: 10px; }
 .more-note { font-size: 12.5px; color: var(--ink-3); margin-top: 10px; }
 .btn-row { display: flex; gap: 8px; margin-top: 2px; }
 .btn { font: 700 13.5px var(--body); border-radius: 999px; padding: 8px 16px; cursor: pointer; border: 2px solid var(--green); transition: background .15s; white-space: nowrap; }
