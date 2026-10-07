@@ -163,11 +163,10 @@
     // Summary strip
     const tile = (k) => `<div class="sum-tile" style="--c:${stratColor(k)}">
         <div class="sum-name">${NAMES[k].name}</div><div class="sum-tech">${NAMES[k].tech}</div>
-        <div class="sum-stat"><span>Extra advances</span><b>${num(res[k].incr)}</b></div>
-        <div class="sum-stat"><span>Net profit</span><b class="${res[k].margin < 0 ? 'neg' : 'pos'}">${usd(res[k].margin)}</b></div></div>`;
-    const bestK = best === 'propensity' ? 'value' : best;
+        <div class="sum-stats"><div class="sum-stat"><span>Extra advances</span><b>${num(res[k].incr)}</b></div>
+        <div class="sum-stat"><span>Net profit</span><b class="${res[k].margin < 0 ? 'neg' : 'pos'}">${usd(res[k].margin)}</b></div></div></div>`;
     $('summary').innerHTML =
-      ['rules', 'propensity', bestK].map(tile).join('');
+      KEYS.map(tile).join('');
 
     // 3 — credited vs caused
     $('h3').textContent = 'Propensity list gets the most credit but drives the least incremental volume';
