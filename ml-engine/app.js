@@ -19,8 +19,17 @@
   const KEYS = STRATEGIES.map((s) => s.key);
 
   // ---------- formatting ----------
-  const num = (v) => Math.round(v).toLocaleString('en-US').replace('-', '−');
-  const usd = (v) => (v < 0 ? '−$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US');
+  // The sim runs on 20,000 members; each one represents SCALE real members (12.0M total).
+  const SCALE = 600;
+  const compact = (v) => {
+    const a = Math.abs(v), sign = v < 0 ? '−' : '';
+    if (a >= 1e6) return sign + (a / 1e6).toFixed(1) + 'M';
+    if (a >= 1e4) return sign + Math.round(a / 1e3) + 'K';
+    if (a >= 1e3) return sign + (a / 1e3).toFixed(1) + 'K';
+    return sign + Math.round(a);
+  };
+  const num = (v) => compact(v * SCALE);
+  const usd = (v) => { const c = compact(v * SCALE); return c.startsWith('−') ? '−$' + c.slice(1) : '$' + c; };
   const pct = (v) => Math.round(v * 100) + '%';
   const segColor = (k) => css('--s-' + k);
   const stratColor = (k) => css('--c-' + k);
@@ -125,7 +134,7 @@
         <th>Member</th><th>Pay</th><th class="num">Last adv.</th><th class="num">Visits / 30d</th><th>Direct dep.</th><th>Checking</th><th>Goals</th><th>Risk</th>
         <th class="num hidden-col">No promo</th><th class="num hidden-col">With promo</th><th class="hidden-col">Group</th>
       </tr></thead><tbody>` + sample.map((m) => `<tr>
-        <td>#${String(m.id).padStart(5, '0')}</td><td>${cad[m.cadence]}</td><td class="num">${m.days}d ago</td>
+        <td>#${String(m.id * SCALE + (m.id * 7919) % SCALE)}</td><td>${cad[m.cadence]}</td><td class="num">${m.days}d ago</td>
         <td class="num">${m.sessions}</td><td>${m.dd ? 'Yes' : 'No'}</td><td>${m.checking ? 'Yes' : 'No'}</td><td>${m.goals ? 'Yes' : 'No'}</td><td>${risk[m.risk]}</td>
         <td class="num hidden-col">${pct(m.p0)}</td><td class="num hidden-col">${pct(m.p1)}</td>
         <td class="hidden-col"><span class="pill" style="--pill-c:${segColor(m.segment)}">${SEGMENT_INFO[m.segment].label}</span></td>

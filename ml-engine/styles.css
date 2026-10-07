@@ -243,3 +243,5 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .members td:last-child, .members th:last-child { padding-right: 12px; }
 .viz > :first-child:not(.seeing) { margin-top: 20px; }
 .viz > :last-child:not(.sowhat) { margin-bottom: 20px; }
+.members { font-size: 13.5px; }
+.members td, .members th { padding-left: 7px; padding-right: 7px; }
