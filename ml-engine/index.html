@@ -39,13 +39,15 @@
   </section>
 
   <!-- Summary -->
+  <div class="setup-strip" id="setup"></div>
+
   <section class="summary" id="summary" aria-live="polite"></section>
 
   <!-- Controls -->
   <section class="controls" aria-label="Simulation controls">
     <div class="ctl-grid">
       <label class="ctl">
-        <span class="ctl-row"><span>Promo budget</span><output id="budgetOut">25% of members</output></span>
+        <span class="ctl-row"><span>Promo budget</span><output id="budgetOut">2,500 of 10,000 members</output></span>
         <input type="range" id="budget" min="5" max="60" step="5" value="25">
       </label>
       <label class="ctl">
@@ -79,7 +81,6 @@
           </div>
         </div>
       </div>
-      <p class="more-note">Expected loss per advance at Normal risk: low $0.50, medium $2.50, high $9. New members retrain both models.</p>
     </div>
   </section>
 

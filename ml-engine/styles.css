@@ -62,6 +62,12 @@ em { font-style: normal; color: var(--green); font-weight: 700; }
 .offer-text { font-family: var(--display); font-weight: 800; font-size: 24px; line-height: 1.15; margin-bottom: 10px; position: relative; z-index: 1; max-width: 88%; }
 .offer-goal { font-size: 14px; color: #CFE0CF; position: relative; z-index: 1; max-width: 72%; }
 
+/* setup strip */
+.setup-strip { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.chip { font-size: 13px; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
+.chip b { color: var(--ink); font-weight: 700; }
+@media (max-width: 640px) { .chip { white-space: normal; } }
+
 /* summary strip */
 .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
 .sum-lead { background: var(--ink); color: #fff; border-radius: var(--radius); padding: 18px 20px; font-size: 15.5px; font-weight: 500; line-height: 1.45; display: flex; align-items: center; }

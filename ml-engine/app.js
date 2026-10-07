@@ -26,10 +26,36 @@
   const stratColor = (k) => css('--c-' + k);
   const riskLabel = (w) => (w === 0 ? 'None' : w < 1 ? 'Low' : w === 1 ? 'Normal' : w <= 2 ? 'High' : 'Very high') + (w === 1 ? '' : ` (${w}×)`);
 
+  // Bucket definitions, matching the cutoffs in sim.js.
+  const RULES = {
+    persuadable: 'Promo adds ≥ 8 pts',
+    sure: '≥ 25% without promo, promo adds < 8 pts',
+    lost: '< 25% without promo, promo adds < 8 pts',
+    sleeping: 'Promo lowers conversion',
+  };
+
+  function renderSetupStrip() {
+    const el = $('setup');
+    if (!el) return;
+    const pool = state.world ? state.world.pool.length : 10000;
+    const ts = state.world ? state.world.trainStats : null;
+    const train = ts ? ts.treatedN + ts.controlN : 10000;
+    const chips = [
+      `<b>${num(pool + train)}</b> simulated members`,
+      `<b>${num(train)}</b> training (last quarter's randomized test)`,
+      `<b>${num(pool)}</b> targetable`,
+      `<b>14-day</b> window`,
+      `<b>$${state.promoCost}</b> fee discount`,
+    ];
+    el.innerHTML = chips.map((c) => `<span class="chip">${c}</span>`).join('');
+  }
+
   // ---------- controls ----------
   const econ = () => ({ budget: state.budget, promoCost: state.promoCost, revenue: state.revenue, lossWeight: state.lossWeight });
   function syncOutputs() {
-    $('budgetOut').textContent = Math.round(state.budget * 100) + '% of members';
+    const poolN = state.world ? state.world.pool.length : 10000;
+    $('budgetOut').textContent = `${num(Math.round(poolN * state.budget))} of ${num(poolN)} members`;
+    renderSetupStrip();
     $('promoOut').textContent = '$' + state.promoCost + ' off';
     $('offerAmt').textContent = '$' + state.promoCost;
     $('revOut').textContent = '$' + state.revenue;
@@ -61,6 +87,7 @@
       state.world = Sim.buildWorld(state.seed, state.scenario);
       $('loading').classList.add('hidden');
       renderSetup();
+      syncOutputs();
       renderStrategies();
       renderResults();
     }, 30);
@@ -75,8 +102,8 @@
       const s = sum[k];
       return `<div class="seg" style="--seg-c:${segColor(k)}">
         <div class="seg-label">${SEGMENT_INFO[k].label}</div>
-        <div class="seg-short">${SEGMENT_INFO[k].short}</div>
-        <div><span class="seg-n">${num(s.n)}</span> <span class="seg-pct">${pct(s.n / pool.length)}</span></div>
+        <div class="seg-short">${RULES[k]}</div>
+        <div><span class="seg-n">${num(s.n)}</span> <span class="seg-pct">of ${num(pool.length)} · ${pct(s.n / pool.length)}</span></div>
         <div class="seg-probs">ExtraCash conversion: <b>${pct(s.p0)}</b> → <b>${pct(s.p1)}</b> with promo</div>
       </div>`;
     }).join('');
