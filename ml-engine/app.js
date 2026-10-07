@@ -77,7 +77,7 @@
         <div class="seg-label">${SEGMENT_INFO[k].label}</div>
         <div class="seg-short">${SEGMENT_INFO[k].short}</div>
         <div><span class="seg-n">${num(s.n)}</span> <span class="seg-pct">${pct(s.n / pool.length)}</span></div>
-        <div class="seg-probs">Chance of borrowing: <b>${pct(s.p0)}</b> → <b>${pct(s.p1)}</b> with promo</div>
+        <div class="seg-probs">ExtraCash conversion: <b>${pct(s.p0)}</b> → <b>${pct(s.p1)}</b> with promo</div>
       </div>`;
     }).join('');
 
