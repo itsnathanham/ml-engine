@@ -147,11 +147,11 @@
     const propTopCredit = KEYS.every((k) => res[k].attributed <= P.attributed);
     const propLowImpact = P.incr <= Math.min(...mlIncr);
     $('h3').textContent = propTopCredit && propLowImpact
-      ? 'The “most likely to borrow” list gets the most credit and causes the least'
+      ? 'The propensity list gets the most credit and drives the least incremental volume'
       : 'Credit and impact tell different stories';
     const anyway = Math.max(0, P.attributed - P.incr) / P.attributed;
-    $('sowhat3').innerHTML = `<b>Why it matters:</b> about <strong>${pct(anyway)}</strong> of the advances credited to “${NAMES.propensity.name}” would have happened anyway. Judge targeting by credit and you'd pick the worst list. That's why clean incrementality needs a comparison group.`;
-    $('legend3').innerHTML = `<span><i class="hatch" style="--c:${css('--ink-3')}"></i>Credited by a typical dashboard</span><span><i style="--c:${css('--ink-3')}"></i>Actually caused by the promo</span>`;
+    $('sowhat3').innerHTML = `<b>So what:</b> about <strong>${pct(anyway)}</strong> of advances credited to the propensity list would have happened anyway. Optimizing to credited advances selects the worst strategy.`;
+    $('legend3').innerHTML = `<span><i class="hatch" style="--c:${css('--ink-3')}"></i>Credited</span><span><i style="--c:${css('--ink-3')}"></i>Incremental</span>`;
     Charts.groupedBars($('chart3'), {
       cats: KEYS.map((k) => NAMES[k].short),
       series: [{ values: KEYS.map((k) => res[k].attributed) }, { values: KEYS.map((k) => Math.max(0, res[k].incr)) }],
@@ -166,8 +166,8 @@
     $('h4').textContent = res[best].margin > 0
       ? `After discounts and credit losses, “${NAMES[best].name}” makes the most money`
       : 'At these settings, every strategy loses money';
-    let so6 = `<b>Why it matters:</b> discounts paid to people who'd borrow anyway are pure cost, and extra advances to high-risk members can lose more than they earn. Try dragging <b>Credit risk</b> up.`;
-    if (V.n < budgetN - 5) so6 += ` Right now the profitable list only used <strong>${pct(V.n / budgetN)}</strong> of its budget: the rest of the promos were expected to lose money.`;
+    let so6 = `<b>So what:</b> discounts to sure things are pure cost, and incremental advances to high-risk members can be margin-negative. The objective is margin after losses, not volume.`;
+    if (V.n < budgetN - 5) so6 += ` At these settings the risk-aware model deploys only <strong>${pct(V.n / budgetN)}</strong> of budget; the rest is expected to lose money.`;
     $('sowhat6').innerHTML = so6;
     Charts.divergingBars($('chart6'), {
       cats: KEYS.map((k) => NAMES[k].short),
@@ -211,9 +211,9 @@
     const truth = ho.trueIncrT;
     const missed = truth < ho.estLo || truth > ho.estHi;
     $('hoGrid').innerHTML = `
-      <div class="ho-stat naive"><div class="k">Dashboard credit</div><div class="v">${num(ho.naiveCredit)}</div><div class="d">Advances taken by the ${num(ho.nT)} members who got the promo</div></div>
-      <div class="ho-stat measured"><div class="k">Holdout estimate</div><div class="v">${num(ho.estIncr)}</div><div class="d">Likely between ${num(ho.estLo)} and ${num(ho.estHi)}. ${pct(ho.rT)} borrowed with the promo vs ${pct(ho.rH)} of ${num(ho.nH)} held back.</div></div>
-      <div class="ho-stat"><div class="k">Hidden truth</div><div class="v">${num(truth)}</div><div class="d">${missed ? 'This run’s range <b>missed</b> the truth. It happens about 1 run in 20.' : 'Inside the estimated range.'}</div></div>`;
+      <div class="ho-stat naive"><div class="k">Dashboard credit</div><div class="v">${num(ho.naiveCredit)}</div><div class="d">All advances by the ${num(ho.nT)} treated members</div></div>
+      <div class="ho-stat measured"><div class="k">Holdout estimate</div><div class="v">${num(ho.estIncr)}</div><div class="d">95% CI ${num(ho.estLo)} to ${num(ho.estHi)}. ${pct(ho.rT)} treated vs ${pct(ho.rH)} of ${num(ho.nH)} held out.</div></div>
+      <div class="ho-stat"><div class="k">True effect (simulated)</div><div class="v">${num(truth)}</div><div class="d">${missed ? 'Outside this run’s 95% interval, as expected in ~1 of 20 runs.' : 'Within the 95% interval.'}</div></div>`;
     Charts.intervalChart($('chart7'), { naive: ho.naiveCredit, lo: ho.estLo, hi: ho.estHi, est: ho.estIncr, truth, fmt: num });
   }
 
