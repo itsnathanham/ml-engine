@@ -1,0 +1,7 @@
+{
+  "cleanUrls": false,
+  "trailingSlash": true,
+  "redirects": [
+    { "source": "/", "destination": "/ml-engine/", "permanent": false }
+  ]
+}
