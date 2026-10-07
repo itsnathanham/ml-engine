@@ -69,7 +69,6 @@
     $('offerAmt').textContent = '$' + state.promoCost;
     $('revOut').textContent = '$' + state.revenue;
     $('lossOut').textContent = riskLabel(state.lossWeight);
-    $('seedOut').textContent = state.seed;
   }
   function bind(id, key, transform) {
     $(id).addEventListener('input', (e) => { state[key] = transform(e.target.value); syncOutputs(); renderResults(); });
